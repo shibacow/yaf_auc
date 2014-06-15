@@ -7,13 +7,15 @@ import simplejson
 import pprint
 src='http://auctions.yahooapis.jp/AuctionWebService/V2/categoryTree'
 import time
+import mongo_op
 conf=yaml.load(open('conf.yaml'))
 
-def parse(d):
+def parse(d,mp):
     result=d['ResultSet']['Result']
     if not 'ChildCategory' in result:
         return
     for c in result['ChildCategory']:
+        mp.save(c)
         print c['CategoryId'],c['CategoryName'].encode('utf-8'),c['Depth'],c['IsLeaf'],
         if 'NumOfAuctions' in c:
             print c['NumOfAuctions']
@@ -25,21 +27,25 @@ def parse(d):
                     category=c['CategoryId'],
                     adf=1,
                     appid=conf['app_id'])
-        geturls(src,params)
-        
-def geturls(url,params):
-    r=requests.get(url,params=params)
-    rs=re.search('^loaded\((.+)\)$',r.content)
-    a=rs.group(1)
-    d=simplejson.loads(a)
-    #pprint.pprint(d)
-    time.sleep(0.1)
-    parse(d)
+        geturls(src,params,mp)
+    
+def geturls(url,params,mp):
+    try:
+        r=requests.get(url,params=params)
+        rs=re.search('^loaded\((.+)\)$',r.content)
+        a=rs.group(1)
+        d=simplejson.loads(a)
+        #pprint.pprint(d)
+        time.sleep(0.1)
+        parse(d,mp)
+    except requests.exceptions.ChunkedEncodingError,err:
+        print err
 def main():
     params=dict(output='json',
-                category=26146,
+                category=0,
                 adf=1,
                 appid=conf['app_id'])
     print params
-    geturls(src,params)
+    mp=mongo_op.MongoOp('localhost')
+    geturls(src,params,mp)
 if __name__=='__main__':main()
