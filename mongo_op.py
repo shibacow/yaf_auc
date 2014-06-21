@@ -2,26 +2,33 @@
 # -*- coding:utf-8 -*-
 
 from pymongo import MongoClient
+import re
 
 class MongoOp(object):
     def __init__(self,host):
         self.client=MongoClient(host)
         self.db=self.client.yaf_auc
         self.cat=self.db.cat
-    def __parse_int(self,d):
+        self.items=self.db.items
+
+    @classmethod
+    def parse_data(cls,d):
         for k in d:
             v=d[k]
-            if v.lower()=='true':
+            if isinstance(v,basestring) and v.lower()=='true':
                 d[k]=True
-            if v.lower()=='false':
+            if isinstance(v,basestring) and v.lower()=='false':
                 d[k]=False
-            if v.isdigit():
+            if isinstance(v,basestring) and v.isdigit():
                 v=int(v)
                 d[k]=v
-
+            if isinstance(v,basestring) and re.search('^[0-9.]*$',v):
+                v=float(v)
+                d[k]=v
+            if isinstance(v,dict):
+                d[k]=MongoOp.parse_data(v)
         return d
-    def save(self,d):
-        d=self.__parse_int(d)
+    def cat_save(self,d):
         if 'CategoryId' in d:
             catid=d['CategoryId']
             a=self.cat.find_one({'CategoryId':catid})
@@ -31,6 +38,10 @@ class MongoOp(object):
                 self.cat.save(a)
             else:
                 self.cat.insert(d)
+    def items_save(self,d):
+        if d:
+            self.items.insert(d)
+        
 
 def main():
     mp=MongoOp('localhost')
