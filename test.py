@@ -9,30 +9,37 @@ src='http://auctions.yahooapis.jp/AuctionWebService/V2/categoryTree'
 import time
 import mongo_op
 conf=yaml.load(open('conf.yaml'))
-
+categorylist=set()
 def parse(d,mp):
+
     result=d['ResultSet']['Result']
     if not 'ChildCategory' in result:
         return
-    for c in result['ChildCategory']:
-        mp.save(c)
-        print c['CategoryId'],c['CategoryName'].encode('utf-8'),c['Depth'],c['IsLeaf'],
-        if 'NumOfAuctions' in c:
-            print c['NumOfAuctions']
-        else:
-            print 'Num Of Auctions is None'
-        print '\t',c['CategoryPath'].encode('utf-8'),c['CategoryIdPath']
-        #print '\t\t',c
-        params=dict(output='json',
-                    category=c['CategoryId'],
-                    adf=1,
-                    appid=conf['app_id'])
-        geturls(src,params,mp)
+    if isinstance(result['ChildCategory'],list):
+        for c in result['ChildCategory']:
+            cid=c['CategoryId']
+            if cid in categorylist:continue
+            mp.save(c)
+            print len(categorylist),c['CategoryId'],c['CategoryName'],c['Depth'],c['IsLeaf'],
+            if 'NumOfAuctions' in c:
+                print c['NumOfAuctions']
+            else:
+                print 'Num Of Auctions is None'
+            print '\t',c['CategoryPath'],c['CategoryIdPath']
+            #print '\t\t',c
+            params=dict(output='json',
+                        category=c['CategoryId'],
+                        adf=1,
+                        appid=conf['app_id'])
+            categorylist.add(cid)
+            geturls(src,params,mp)
     
 def geturls(url,params,mp):
     try:
         r=requests.get(url,params=params)
         rs=re.search('^loaded\((.+)\)$',r.content)
+        print r.content
+        if not rs:return
         a=rs.group(1)
         d=simplejson.loads(a)
         #pprint.pprint(d)
