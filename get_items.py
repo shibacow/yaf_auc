@@ -10,14 +10,17 @@ from mongo_op import MongoOp
 import time
 from fluent import sender,event
 from datetime import datetime
+import copy
 
 src = 'http://auctions.yahooapis.jp/AuctionWebService/V2/categoryLeaf'
 conf=yaml.load(open('conf.yaml'))
 
 class GetItems(object):
     TotalAccess=[0]
-    def __init__(self,mp):
+    def __init__(self,mp,cid,cinfo):
         self.mp=mp
+        self.cid=cid
+        self.cinfo=cinfo
 
     @classmethod
     def get_cat(cls,mp,depth):
@@ -59,7 +62,7 @@ class GetItems(object):
     def __save_td(self,k):
         for cd in ('EndTime','CreatedAt'):
             k[cd]=k[cd].strftime('%Y-%m-%d %H:%M:%S')
-        event.Event('yaf_auc.test2',k)
+        event.Event('yaf_auc.items',k)
     def __save_mongo(self,k):
         self.mp.items_save(k)
 
@@ -72,11 +75,13 @@ class GetItems(object):
             for k in r:
                 k['EndTime']=self.__parse_time(k['EndTime'])
                 k['CreatedAt']=datetime.now()
+                k['CategoryId']=self.cid
+                k['CategoryIdPath']=self.cinfo['CategoryIdPath']
                 k=MongoOp.parse_data(k)
                 bids=k['Bids']
                 if bids>0:
-                    self.__save_td(k)
-                    self.__save_mongo(k)
+                    self.__save_mongo(copy.deepcopy(k))
+                    self.__save_td(copy.deepcopy(k))
                     print self.TotalAccess[0],bids,page,k['Title']
         return bids
 def main():
@@ -87,7 +92,7 @@ def main():
     for c in r:
         cid=c['CategoryId']
         print cid,c['NumOfAuctions'],c['CategoryPath']
-        gi=GetItems(mp)
+        gi=GetItems(mp,cid,c)
         pages=gi.get_pages(cid)
         print pages
         print GetItems.TotalAccess
