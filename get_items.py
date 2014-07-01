@@ -11,6 +11,13 @@ import time
 from fluent import sender,event
 from datetime import datetime
 import copy
+import logging
+import logging.handlers
+
+my_logger = logging.getLogger('MyLogger')
+my_logger.setLevel(logging.DEBUG)
+handler = logging.handlers.SysLogHandler(address = '/dev/log')
+my_logger.addHandler(handler)
 
 src = 'http://auctions.yahooapis.jp/AuctionWebService/V2/categoryLeaf'
 conf=yaml.load(open('conf.yaml'))
@@ -30,7 +37,7 @@ class GetItems(object):
         for c in mp.cat.find({"Depth":depth}):
             if 'NumOfAuctions' in c:
                 nums=c['NumOfAuctions']
-                if 100.0*nums/sums>0.3:
+                if 100.0*nums/sums>0.5:
                     catlist.append(c)
         return sorted(catlist,key=lambda x:x['NumOfAuctions'],reverse=True)
     def __get_data_from_src(self,cid,page):
@@ -82,7 +89,8 @@ class GetItems(object):
                 if bids>0:
                     self.__save_mongo(copy.deepcopy(k))
                     self.__save_td(copy.deepcopy(k))
-                    print self.TotalAccess[0],bids,page,k['Title']
+                    msg="totalaccess={} bids={} page={} title={}".format(self.TotalAccess[0],bids,page,k['Title'].encode('utf-8'))
+                    my_logger.info(msg)
         return bids
 def main():
     sender.setup('td')
@@ -91,15 +99,16 @@ def main():
     r=GetItems.get_cat(mp,3)
     for c in r:
         cid=c['CategoryId']
-        print cid,c['NumOfAuctions'],c['CategoryPath']
+        msg="cid={} aucnum={} catpath={}".format(cid,c['NumOfAuctions'],c['CategoryPath'].encode('utf-8'))
+        my_logger.info(msg)
         gi=GetItems(mp,cid,c)
         pages=gi.get_pages(cid)
-        print pages
-        print GetItems.TotalAccess
+        msg="pages={},totalaccess={}".format(pages,GetItems.TotalAccess)
+        my_logger.info(msg)
         for i in range(1,pages):
             b=gi.get_items(cid,i)
             if b==0:
-                print "page {} break ".format(i)
-                print GetItems.TotalAccess
+                msg="page {} break ,totalaccess={}".format(i,GetItems.TotalAccess)
+                my_logger.debug(msg)
                 break
 if __name__=='__main__':main()
