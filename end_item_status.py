@@ -82,23 +82,37 @@ class GetData(object):
                 #pprint.pprint(p)
                 bidslist.append(p)
         
-        
+def cond_test(mp):
+    dnow=datetime.now()
+    #cond=mp.items.find({"CurrentPrice":{"$gt":800000}})
+    cond=mp.items.find({"EndTime":{"$gt":dnow}})
+    pprint.pprint(cond.explain())
+    #]}).sort([("EndTime",pymongo.ASCENDING)])
+    #print cond.explain()
+
+def simple_find(mp):
+    for i,a in enumerate(mp.items.find()):
+        if i%1000==0:
+            print i
 def get_end_item(mp):
     dnow=datetime.now()
-    cond=mp.items.find({"$and":[
-        {"Bids":{'$gt':1}},\
-        {"EndTime":{"$lt":datetime.now()}}\
-    ]}).sort([("EndTime",pymongo.ASCENDING)])
-    print cond.count()
-    for i in cond.limit(3):
-        ed=i['EndTime']
-        gd=GetData(mp)
-        ac=AucItem(i)
-        print ac
-        gd.get_data(ac)
+    
+    #cond=mp.items.find({"$and":[
+    #    {"Bids":{'$gt':1}},\
+    #    {"EndTime":{"$lt":datetime.now()}}\
+    #]}).sort([("EndTime",pymongo.ASCENDING)])
+    #print cond.explain()
+    #print cond.count()
+    #for i in cond.limit(3):
+    #    ed=i['EndTime']
+    #    gd=GetData(mp)
+    #    ac=AucItem(i)
+    #    print ac
+    #    gd.get_data(ac)
 
 def main():
     mp=MongoOp('localhost')
-    get_end_item(mp)
-
+    #get_end_item(mp)
+    cond_test(mp)
+    #simple_find(mp)
 if __name__=='__main__':main()

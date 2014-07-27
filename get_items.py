@@ -37,7 +37,7 @@ class GetItems(object):
         for c in mp.cat.find({"Depth":depth}):
             if 'NumOfAuctions' in c:
                 nums=c['NumOfAuctions']
-                if 100.0*nums/sums>0.5:
+                if 100.0*nums/sums>0.1:
                     catlist.append(c)
         return sorted(catlist,key=lambda x:x['NumOfAuctions'],reverse=True)
     def __get_data_from_src(self,cid,page):
