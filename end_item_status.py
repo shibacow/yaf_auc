@@ -9,10 +9,11 @@ import requests
 import re
 import time
 import simplejson
-from datetime import datetime
+from datetime import datetime,timedelta
 conf=yaml.load(open('conf.yaml'))
 src='http://auctions.yahooapis.jp/AuctionWebService/V1/BidHistoryDetail'
 detail_src='http://auctions.yahooapis.jp/AuctionWebService/V2/auctionItem'
+from common import time_profile
 
 class AucItem(object):
     def __init__(self,i):
@@ -82,10 +83,15 @@ class GetData(object):
                 #pprint.pprint(p)
                 bidslist.append(p)
         
+@time_profile
 def cond_test(mp):
-    dnow=datetime.now()
+    dnow=datetime.now()-timedelta(days=7)
+    ago=dnow-timedelta(days=7)
     #cond=mp.items.find({"CurrentPrice":{"$gt":800000}})
-    cond=mp.items.find({"EndTime":{"$gt":dnow}})
+    print dnow,ago
+    cond=mp.items.find(
+        {"EndTime":{"$lte":dnow,"$gte":ago}
+        })
     pprint.pprint(cond.explain())
     #]}).sort([("EndTime",pymongo.ASCENDING)])
     #print cond.explain()
