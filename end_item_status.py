@@ -99,7 +99,10 @@ def cond_test(mp):
 def simple_find(mp):
     for i,a in enumerate(mp.items.find()):
         if i%1000==0:
-            print i
+            #print i,a
+            for k in a:
+                v=a[k]
+                print i,k,v
 def get_end_item(mp):
     dnow=datetime.now()
     
@@ -119,6 +122,6 @@ def get_end_item(mp):
 def main():
     mp=MongoOp('localhost')
     #get_end_item(mp)
-    cond_test(mp)
-    #simple_find(mp)
+    #cond_test(mp)
+    simple_find(mp)
 if __name__=='__main__':main()
