@@ -46,7 +46,7 @@ def table_def(meta,delkey):
             tbl.create()
 
     tbllist=[
-        ('delchekc_items',check_items),
+        ('delcheck_items',check_items),
         ]
     '''
     テーブルの作成と、削除で依存関係のため順序が逆なので、
