@@ -19,11 +19,15 @@ def get_items(mp):
 
 def get_end_items(mp,meta,sess):
     kw=('id','AuctionID','Title','CreatedAt','EndTime','Bids',\
-        'CategoryId','CurrentPrice','CategoryIdPath','ItemUrl','BidOrBuy','SellerId')
+        'CategoryId','CurrentPrice','CategoryIdPath','ItemUrl',\
+        'BidOrBuy','SellerId','AuctionItemUrl')
     CI=model.CheckItem
     for i,item in get_items(mp):
+        #for c in item:
+        #    logging.info(c)
         if not isinstance(item['Title'],unicode):
-            print item["Title"]
+            logging.info(item["Title"])
+            logging.info(item['ItemUrl'])
             item['Title']=unicode(str(item['Title']),'utf-8')
         iid=item['_id']
         seller=item['Seller']['Id']
@@ -35,7 +39,7 @@ def get_end_items(mp,meta,sess):
         if i%10000==0:
             logging.info(i)
             sess.commit()
-        #if i>100100:
+        #if i>100:
         #    break
     sess.commit()
             

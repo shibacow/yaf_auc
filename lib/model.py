@@ -29,6 +29,7 @@ def table_def(meta,delkey):
         Column('BidOrBuy',Integer,index=True,nullable=True),
         Column('CategoryIdPath',String(255),index=True,nullable=False),
         Column('ItemUrl',String(255),index=True,nullable=False),
+        Column('AuctionItemUrl',String(255),index=True,nullable=False),
         Column('InsertedAt',DateTime,default=func.now(),nullable=False),
         )
     mapper(CheckItem,check_items)
