@@ -70,58 +70,17 @@ class GetData(object):
     def get_data(self,au):
         pages=self.get_pages(au.AuctionID)
         bidslist=[]
-        #pprint.pprint(au.i)
         aid=au.AuctionID
         for i in range(1,pages+1):
             url=src
             d=self.__get_data_from_src(url,aid,i)
-            #pprint.pprint(d)
             k=d['ResultSet']['Result']
             for j,p in enumerate(k):
-                #print '='*50
-                #print i,j+1
-                #pprint.pprint(p)
                 bidslist.append(p)
         
-@time_profile
-def cond_test(mp):
-    dnow=datetime.now()-timedelta(days=7)
-    ago=dnow-timedelta(days=7)
-    #cond=mp.items.find({"CurrentPrice":{"$gt":800000}})
-    print dnow,ago
-    cond=mp.items.find(
-        {"EndTime":{"$lte":dnow,"$gte":ago}
-        })
-    pprint.pprint(cond.explain())
-    #]}).sort([("EndTime",pymongo.ASCENDING)])
-    #print cond.explain()
-
-def simple_find(mp):
-    for i,a in enumerate(mp.items.find()):
-        if i%1000==0:
-            #print i,a
-            for k in a:
-                v=a[k]
-                print i,k,v
 def get_end_item(mp):
-    dnow=datetime.now()
-    
-    #cond=mp.items.find({"$and":[
-    #    {"Bids":{'$gt':1}},\
-    #    {"EndTime":{"$lt":datetime.now()}}\
-    #]}).sort([("EndTime",pymongo.ASCENDING)])
-    #print cond.explain()
-    #print cond.count()
-    #for i in cond.limit(3):
-    #    ed=i['EndTime']
-    #    gd=GetData(mp)
-    #    ac=AucItem(i)
-    #    print ac
-    #    gd.get_data(ac)
+    pass
 
 def main():
     mp=MongoOp('localhost')
-    #get_end_item(mp)
-    #cond_test(mp)
-    simple_find(mp)
 if __name__=='__main__':main()

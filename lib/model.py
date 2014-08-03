@@ -6,9 +6,11 @@ from sqlalchemy.orm import *
 import web
 
 class CheckItem(object):
-    def __init__(self,kw):
-        pass
-
+    def __init__(self,item,kw):
+        for k in kw:
+            if k in item:
+                v=item[k]
+                setattr(self,k,v)
 
 def table_def(meta,delkey):
     clear_mappers()
@@ -17,17 +19,19 @@ def table_def(meta,delkey):
         'check_items',meta,
         Column('id',String(255),primary_key=True),
         Column('AuctionID',String(255),index=True,default=u"",nullable=False),
+        Column('SellerId',String(255),index=True,default=u"",nullable=False),
         Column('Title',Unicode(255),index=True,default=u"",nullable=False),
         Column('CreatedAt',DateTime,default=func.now(),nullable=False),
         Column('EndTime',DateTime,default=func.now(),nullable=False),
         Column('Bids',Integer,index=True,nullable=False),
         Column('CategoryId',Integer,index=True,nullable=False),
         Column('CurrentPrice',Integer,index=True,nullable=False),
-        Column('CategoryPath',String(255),index=True,nullable=False),
+        Column('BidOrBuy',Integer,index=True,nullable=True),
+        Column('CategoryIdPath',String(255),index=True,nullable=False),
         Column('ItemUrl',String(255),index=True,nullable=False),
-
+        Column('InsertedAt',DateTime,default=func.now(),nullable=False),
         )
-
+    mapper(CheckItem,check_items)
     #Index('tag_order',tag.c.date,tag.c.tag_name_id)
     #Index('tag_count',tag.c.date,tag.c.tagcount)
 
