@@ -11,6 +11,7 @@ class MongoOp(object):
         self.cat=self.db.cat
         self.items=self.db.items
         self.enditem=self.db.enditem
+        self.enditemseed=self.db.enditemseed
 
     @classmethod
     def parse_data(cls,d):
@@ -42,11 +43,11 @@ class MongoOp(object):
     def items_save(self,d):
         if d:
             self.items.insert(d)
-    def has_enditem(self,aid):
-        return self.enditem.find_one({'AuctionID':aid})
-    def enditem_save(self,d):
+    def has_enditem(self,key,aid):
+        return self.db[key].find_one({'AuctionID':aid})
+    def enditem_save(self,key,d):
         if d:
-            self.enditem.insert(d)
+            self.db[key].insert(d)
 
 def main():
     mp=MongoOp('localhost')
