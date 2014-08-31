@@ -10,6 +10,7 @@ class MongoOp(object):
         self.db=self.client.yaf_auc
         self.cat=self.db.cat
         self.items=self.db.items
+        self.enditem=self.db.enditem
 
     @classmethod
     def parse_data(cls,d):
@@ -41,7 +42,11 @@ class MongoOp(object):
     def items_save(self,d):
         if d:
             self.items.insert(d)
-        
+    def has_enditem(self,aid):
+        return self.enditem.find_one({'AuctionID':aid})
+    def enditem_save(self,d):
+        if d:
+            self.enditem.insert(d)
 
 def main():
     mp=MongoOp('localhost')
