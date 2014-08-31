@@ -23,25 +23,7 @@ src='http://auctions.yahooapis.jp/AuctionWebService/V1/BidHistoryDetail'
 detail_src='http://auctions.yahooapis.jp/AuctionWebService/V2/auctionItem'
 from common import time_profile
 
-class AucItem(object):
-    def __init__(self,i):
-        self.i=i
-        for k in i:
-            v=i[k]
-            setattr(self,k,v)
-    def __repr__(self):
-        i=self.i
-        msg="id={} Bids={} Price={} endTime={} Title={} link={}".format(
-            i['AuctionID'],i['Bids'],i['CurrentPrice'],i['EndTime'],i['Title'].encode('utf-8'),i['AuctionItemUrl']
-        )
-        return msg
-
-class BidsHistory(object):
-    def __init__(self,au):
-        self.info={}
-        self.au=au
         
-
 class GetData(object):
     TotalAccess=[0]
     def __init__(self,mp,sess):
@@ -73,7 +55,7 @@ class GetData(object):
         bid['Price']=int(price)
     def get_item_detail(self,au):
         url=detail_src
-        return self.__get_data_from_src(url,au.AuctionID,1)
+        return self.__get_data_from_src(url,au['AuctionID'],1)
         
     def get_pages(self,aid):
         url=src
@@ -110,7 +92,7 @@ class GetData(object):
             bid['EDate']=bend
             bid['DateProgress']=progress
             #print progress
-            
+        return True
     def __more_price(self,bidslist):
         pdist=sorted(bidslist,key=lambda x:x['Price'])
         pfirst=pdist[0]['Price']
@@ -126,6 +108,7 @@ class GetData(object):
             bid['FirstPrice']=pfirst
             bid['EPrice']=pend
             bid['PriceProgress']=progress
+        return True
     def __conv_datetime(self,tm):
         tm=tm.split('+')[0]
         return datetime.strptime(tm,'%Y-%m-%dT%H:%M:%S')
@@ -147,9 +130,11 @@ class GetData(object):
         return aucinfo
 
     def get_data(self,au):
-        aid=au.AuctionID
-        print aid
-        if self.mp.has_enditem(aid):
+        aid=au['AuctionID']
+        print "aid={}".format(aid)
+        if self.mp.has_enditem('enditem',aid):
+            au['is_download']=True
+            self.mp.enditemseed.save(au)
             logging.info("aid={} has saved".format(aid))
             return
         aucinfo=self.__item_info(au)
@@ -158,7 +143,9 @@ class GetData(object):
                 #pprint.pprint(aucinfo)
                 logging.info("endtime={} aucid={}".format(aucinfo['EndTime'],aucinfo['AuctionID']))
             return 
-        pages=self.get_pages(au.AuctionID)
+        #pprint.pprint(aucinfo)
+        pages=self.get_pages(aid)
+        logging.info("pages={}".format(pages))
         bidslist=[]
         for i in range(1,pages+1):
             url=src
@@ -169,15 +156,22 @@ class GetData(object):
                 if 'Price' in p and 'Date' in p and p['IsCanceled']=='false':
                     self.__conv_data(p)
                     bidslist.append(p)
+
+        #pprint.pprint(bidslist)
         if bidslist:
-            if not self.__more_detail_date(bidslist) or not  self.__more_price(bidslist):
+            if (not self.__more_detail_date(bidslist)) or (not  self.__more_price(bidslist)):
+                logging.info("invalid data bidslist={}".format(len(bidslist)))
                 bidslist=[]
+        
+
         if bidslist:
             #pprint.pprint(aucinfo)
             aucinfo['bidslist']=bidslist
-            if not self.mp.has_enditem(aid):
-                self.mp.enditem_save(aucinfo)
-
+            if not self.mp.has_enditem('enditem',aid):
+                self.mp.enditem_save('enditem',aucinfo)
+                au['is_download']=True
+                self.mp.enditemseed.save(au)
+                logging.info("save au={}".format(au))
 def initdb(echoOn=False):
     meta=model.mkdbpath(conf['mysql'],echoOn=echoOn)
     tbldel={
@@ -199,23 +193,21 @@ def collectEndItems(sess,mp):
     mbids=model.func.max(CI.Bids)
     for a,etime,bids in sess.query(CI,mx,mbids).group_by(CI.AuctionID).having(mbids> 20).limit(20000).all():
         yield a,etime,bids
+
+@time_profile    
+def collectEndItemsFromMongo(sess,mp):
+    for a in mp.enditemseed.find({'is_download':False}).sort('EndTime',1).limit(5000):
+        yield a
+
 def main():
     mp,meta,sess=init()
     cnt=0
-    bst=[]
-    for a,etime,bids in collectEndItems(sess,mp):
-        msg="{},{},{}\n".format(a.AuctionID,etime,bids)
-        bst.append(msg)
-        
-        #print a,etime,bids
-        #gd=GetData(mp,sess)
-        #gd.get_data(a)
-        #cnt+=1
-        #msg="count={} total_access={}".format(cnt,GetData.TotalAccess[0])
-        #logging.info(msg)
-        #if GetData.TotalAccess[0]>20000:
-        #    break
-    out=open('end_list2.txt','wb')
-    out.writelines(bst)
-    out.close()
+    for a in collectEndItemsFromMongo(sess,mp):
+        gd=GetData(mp,sess)
+        gd.get_data(a)
+        cnt+=1
+        msg="count={} total_access={}".format(cnt,GetData.TotalAccess[0])
+        logging.info(msg)
+        if GetData.TotalAccess[0]>20000:
+            break
 if __name__=='__main__':main()
