@@ -51,8 +51,12 @@ class GetData(object):
         dt=datetime.strptime(dt,'%Y-%m-%dT%H:%M:%S')
         bid['Date']=dt
         price=bid['Price']
+        if isinstance(price,dict):
+            logging.info("price={}".format(price))
+            return False
         price=price.split('.')[0]
         bid['Price']=int(price)
+        return True
     def get_item_detail(self,au):
         url=detail_src
         return self.__get_data_from_src(url,au['AuctionID'],1)
@@ -154,8 +158,8 @@ class GetData(object):
             for j,p in enumerate(k):
                 if not isinstance(p,dict):continue
                 if 'Price' in p and 'Date' in p and p['IsCanceled']=='false':
-                    self.__conv_data(p)
-                    bidslist.append(p)
+                    if self.__conv_data(p):
+                        bidslist.append(p)
 
         #pprint.pprint(bidslist)
         if bidslist:
@@ -208,6 +212,6 @@ def main():
         cnt+=1
         msg="count={} total_access={}".format(cnt,GetData.TotalAccess[0])
         logging.info(msg)
-        if GetData.TotalAccess[0]>20000:
+        if GetData.TotalAccess[0]>45000:
             break
 if __name__=='__main__':main()
