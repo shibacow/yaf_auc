@@ -200,7 +200,7 @@ def collectEndItems(sess,mp):
 
 @time_profile    
 def collectEndItemsFromMongo(sess,mp):
-    for a in mp.enditemseed.find({'is_download':False}).sort('EndTime',1).limit(5000):
+    for a in mp.enditemseed.find({'is_download':False}).sort('EndTime',1).limit(10000):
         yield a
 
 def main():
@@ -212,6 +212,6 @@ def main():
         cnt+=1
         msg="count={} total_access={}".format(cnt,GetData.TotalAccess[0])
         logging.info(msg)
-        if GetData.TotalAccess[0]>45000:
+        if GetData.TotalAccess[0]>40000:
             break
 if __name__=='__main__':main()
