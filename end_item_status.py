@@ -154,6 +154,12 @@ class GetData(object):
         for i in range(1,pages+1):
             url=src
             d,r=self.__get_data_from_src(url,aid,i)
+            if not 'ResultSet' in d:
+                logging.info('invalid data d={}'.format(d))
+                continue
+            if not 'Result' in d['ResultSet']:
+                logging.info('invalid data d={}'.format(d))
+                continue
             k=d['ResultSet']['Result']
             for j,p in enumerate(k):
                 if not isinstance(p,dict):continue

@@ -90,6 +90,7 @@ def fit_curves(dk):
             rz1=resultB
         except TypeError,err:
             print err
+            return None,[],None,[]
     results0=numpy.array(results0)
     results1=numpy.array(results1)
     return rz0,results0,rz1,results1
@@ -110,11 +111,11 @@ def draw_curve(plt,rz,color):
 def main():
     mp=init()
     matchcnt=[0,0]
-    for j,a in enumerate(mp.enditem.find().limit(100)):
+    for j,a in enumerate(mp.enditem.find().limit(5000)):
         assert(a['bidslist'])
         dk=normalize_bidslist(a['bidslist'])
         rz0,results0,rz1,results1=fit_curves(dk)
-        if verify_results(results0):
+        if rz0 and rz1 and verify_results(results0) and verify_results(results1):
             plt.scatter(dk['APX'],dk['APY'],color='green')
             plt.scatter(dk['PX'],dk['PY'],color='red')
             draw_curve(plt,rz0,'blue')
