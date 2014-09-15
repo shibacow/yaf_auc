@@ -66,10 +66,11 @@ def save_plt(plt,a,j):
     aid=a['AuctionID']
     filename="graph/{}.png".format(aid)
     plt.savefig(filename)
-    plt.clf()
-    plt.cla()
     msg="j={} filename={}".format(j,filename)
     logging.info(msg)
+def close_plt(plt):
+    plt.clf()
+    plt.cla()
 
 def fit_curves(dk):
     results0=[]
@@ -108,10 +109,25 @@ def draw_curve(plt,rz,color):
     ylist=numpy.array(ylist)
     plt.plot(xlist,ylist,color=color)
 
+def gen_differentiate(plt,rz,color):
+    xlist=[0.2,0.4,0.6,0.8,0.9]
+    a0=rz[0][0]
+    a1=rz[0][1]
+    a2=rz[0][2]
+    for x in xlist:
+        slope=3*a2*(x**2)- 2*x*(3*a2-a1) + 2*a1 + a0 + 3* a2
+        y=a0*(x-1) - a1*((x-1)**2) + a2*((x-1)**3) + 1
+        b=y-(slope*x)
+        #print "x={} y={} slope={}".format(x,y,slope)
+        x0=[x,x+0.1]
+        fx=lambda aa:slope*aa + b
+        y0=[fx(xa) for xa in x0]
+        #print "x0={} y0={}".format(x0,y0)
+        plt.plot(x0,y0,color=color)
 def main():
     mp=init()
     matchcnt=[0,0]
-    for j,a in enumerate(mp.enditem.find().limit(5000)):
+    for j,a in enumerate(mp.enditem.find().limit(10)):
         assert(a['bidslist'])
         dk=normalize_bidslist(a['bidslist'])
         rz0,results0,rz1,results1=fit_curves(dk)
@@ -120,6 +136,8 @@ def main():
             plt.scatter(dk['PX'],dk['PY'],color='red')
             draw_curve(plt,rz0,'blue')
             draw_curve(plt,rz1,'pink')
+            gen_differentiate(plt,rz0,color='green')
+            gen_differentiate(plt,rz1,color='yellow')
             save_plt(plt,a,j)
-
+            close_plt(plt)
 if __name__=='__main__':main()
