@@ -135,7 +135,7 @@ class GetData(object):
 
     def get_data(self,au):
         aid=au['AuctionID']
-        print "aid={}".format(aid)
+        #print "aid={}".format(aid)
         if self.mp.has_enditem('enditem',aid):
             au['is_download']=True
             self.mp.enditemseed.save(au)
