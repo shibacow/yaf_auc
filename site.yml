@@ -1,0 +1,108 @@
+---
+- hosts: 127.0.0.1
+  user: ubuntu 
+  tasks:
+    - name: "apt-get install git"
+      apt: pkg=git
+      sudo: yes
+    - name: "apt-get install emacs"
+      apt: pkg=emacs
+      sudo: yes
+    - name: "apt-get install tmux"
+      apt: pkg=tmux
+      sudo: yes
+    - name: "apt-get install  build-essential"
+      action: apt pkg=build-essential
+      sudo: yes
+    - name: "apt-get install mongodb"
+      apt: pkg=mongodb-server
+      sudo: yes
+    - name: "apt-get install python-mongodb"
+      apt: pkg=python-pymongo
+      sudo: yes
+    - name: "apt-get install   yaml-mode"
+      apt: pkg=yaml-mode
+      sudo: yes
+    - name: "apt-get install gevent"
+      apt: pkg=python-gevent
+      sudo: yes
+    - name: "apt-get install python-requests"
+      apt: pkg=python-requests
+      sudo: yes
+    - name: "apt-get install python-simplejson"
+      apt: pkg=python-simplejson
+      sudo: yes
+    - name: "apt-get install ntp"
+      apt: pkg=ntp
+      sudo: yes
+    - name: "exec install td-agent shell"
+      #shell: ./install-ubuntu-precise.sh
+      apt: pkg=td-agent
+      sudo: yes
+    - name: "apt-get install python-pip"
+      apt: pkg=python-pip
+      sudo: yes
+    - name: "apt-get install python-dev"
+      apt: pkg=python-dev
+      sudo: yes
+    - name: "apt-get install sysstat"
+      apt: pkg=sysstat
+      sudo: yes
+    - name: "apt-get install atsar"
+      apt: pkg=atsar
+      sudo: yes
+    - name: "apt-get install zsh"
+      apt: pkg=zsh
+      sudo: yes
+    - name: "apt-get install zsh"
+      apt: pkg=zsh
+      sudo: yes
+    - name: "apt-get install zshdb"
+      apt: pkg=zshdb
+      sudo: yes
+    - name: Install mysql client and server
+      action: apt pkg=$item state=present
+      with_items:
+        - mysql-client
+        - mysql-server
+        - python-mysqldb
+      sudo: yes
+    - name: enable mysql service
+      action: service name=mysql state=started enabled=yes
+      sudo: yes
+    - name: Install python-mysql
+      action: apt pkg=$item state=present
+      with_items:
+        - python-sqlalchemy
+        - python-sqlalchemy-ext
+        - python-sqlalchemy-doc
+      sudo: yes
+    - name: install python-webpy
+      apt: pkg=python-webpy
+      sudo: yes
+    - name: install zabbix-agent
+      apt: pkg=zabbix-agent
+      sudo: yes
+    - name: install postgresql-client
+      apt: pkg=postgresql-client
+      sudo: yes
+    - name: install aws command line
+      pip: name=awscli
+      sudo: yes
+    - name: install scipy
+      apt: pkg=python-scipy
+      sudo: yes
+    - name: install ipython
+      apt: pkg=ipython
+      sudo: yes
+    - name: install matplotlib
+      apt: pkg=python-matplotlib
+      sudo: yes
+    - name: Install mechab
+      action: apt pkg=$item state=present
+      with_items:
+        - mecab
+        - mecab-naist-jdic
+        - mecab-utils
+        - python-mecab
+      sudo: yes
