@@ -109,3 +109,6 @@
         - mecab-utils
         - python-mecab
       sudo: yes
+    - name: install s3cmd
+      apt: pkg=s3cmd
+      sudo: yes
