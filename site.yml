@@ -98,6 +98,9 @@
     - name: install matplotlib
       apt: pkg=python-matplotlib
       sudo: yes
+    - name: install python-scikits-learn
+      apt: pkg=python-scikits-learn
+      sudo: yes
     - name: Install mechab
       action: apt pkg=$item state=present
       with_items:
